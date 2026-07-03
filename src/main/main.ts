@@ -54,6 +54,10 @@ const smokeModalArg = process.argv.find((arg) => arg.startsWith('--smoke-modal='
 const smokeModalSymbol = smokeModalArg
   ? normalizeSymbol(smokeModalArg.slice('--smoke-modal='.length))
   : null;
+const smokeRailArg = process.argv.find((arg) => arg.startsWith('--smoke-rail='));
+const smokeRail = smokeRailArg?.slice('--smoke-rail='.length);
+const smokeOverlaysArg = process.argv.find((arg) => arg.startsWith('--smoke-overlays='));
+const smokeOverlays = smokeOverlaysArg?.slice('--smoke-overlays='.length);
 
 // ---------------------------------------------------------------------------
 // Input validation helpers
@@ -392,6 +396,8 @@ function createWindow(): void {
   const indexPath = path.join(__dirname, '../renderer/index.html');
   const query: Record<string, string> = {};
   if (smokeModalSymbol) query.smokeModal = smokeModalSymbol;
+  if (smokeRail) query.smokeRail = smokeRail;
+  if (smokeOverlays) query.smokeOverlays = smokeOverlays;
   if (forceOnboarding) query.onboarding = '1';
   if (Object.keys(query).length) {
     void win.loadFile(indexPath, { query });

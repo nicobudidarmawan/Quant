@@ -2,163 +2,166 @@
 
 Quant is an open-source desktop market terminal for tracking ETFs and stocks. It combines a watchlist, holdings-driven news, earnings context, annotated charts, macro overlays, signal scoring, and an optional local Quant AI agent.
 
-The app is built with Electron, React, TypeScript, esbuild, and lightweight-charts. It runs as a local desktop application on macOS and Windows.
+The core promise is simple: useful market context without paid API lock-in. Quant can run with public market data sources, deterministic signal analysis, and a local OpenAI-compatible LLM server when you want AI responses. No cloud LLM API key is required for the default experience.
 
-## Status
+<p align="center">
+  <img src="./docs/assets/showcase/quant-hero.png" alt="Quant desktop market terminal hero image" width="100%">
+</p>
 
-Quant is usable as a local desktop app, but it depends on free and unofficial public data endpoints. Treat all market data as informational, delayed, incomplete, or unavailable. This project is not investment advice.
+<p align="center">
+  <a href="https://github.com/eisenjimmy/Quant"><img src="https://img.shields.io/badge/repo-eisenjimmy%2FQuant-4d7ef7" alt="Repository"></a>
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-1b2438" alt="Supported platforms">
+  <img src="https://img.shields.io/badge/local%20AI-optional-1fbf75" alt="Optional local AI">
+  <img src="https://img.shields.io/badge/cloud%20LLM%20API%20cost-%240-1fbf75" alt="Zero cloud LLM API cost">
+  <img src="https://img.shields.io/badge/license-MIT-6d95ff" alt="MIT license">
+</p>
 
-## Features
+## What Quant Does
 
-- ETF and stock watchlist with live or fallback quote data
-- Symbol search with offline seed data fallback
-- Holdings-driven news feed for ETF top holdings and watched stocks
-- Upcoming earnings calendar for the active market universe
-- Candlestick chart modal with range controls
-- Auto-detected pivots, support and resistance lines, and risk overlays
-- Macro overlays for jobs, unemployment, inflation, 10Y yield, oil, and VIX
-- Signal Desk with deterministic setup, regime, risk, and blocker analysis
-- Quant AI agent chat as a separate tab
-- First-run onboarding wizard with starter watchlist presets and LLM setup
-- Optional OpenAI-compatible local LLM integration
-- Deterministic fallback memo when no LLM is enabled
-- Smoke-test mode for release verification
-- Runnable release folder generation for macOS and Windows
+Quant is built for quick market scanning:
 
-## Screens
+- Track ETFs and stocks in a desktop watchlist.
+- Expand ETF holdings into a broader market universe.
+- Read holdings-driven news and upcoming earnings.
+- Open a full candlestick chart with pivots, support, resistance, and risk levels.
+- Inspect news at each detected swing so price action can be read with the surrounding headline context.
+- Toggle macro overlays directly on the chart: jobs, unemployment, CPI, 10Y yield, oil, and VIX.
+- Review a deterministic Signal Desk before asking an AI agent.
+- Use Quant AI with no paid cloud LLM API cost by staying in deterministic mode or running a local model server.
 
-The main layout has three primary areas:
+## Try It
 
-- Left: watchlist and daily movers
-- Center: market news for the selected universe
-- Right: earnings calendar
+There are two practical ways to try Quant.
 
-Click a watchlist symbol or earnings row to open the chart modal. The modal has three right-rail tabs:
+### Option 1: Run the Checked-In Release Build
 
-- Signal Desk: deterministic signal, risk, valuation, and earnings context
-- Quant AI: agentic chat over the active chart and context
-- News: headlines grouped around detected swing points
+Clone the repository:
 
-## Architecture
+```bash
+git clone https://github.com/eisenjimmy/Quant.git
+cd Quant
+```
 
-Quant uses the standard Electron split:
+macOS:
 
-| Layer | Path | Responsibility |
-| --- | --- | --- |
-| Main process | `src/main` | Fetches remote data, owns persistent stores, handles IPC |
-| Preload bridge | `src/main/preload.ts` | Exposes a typed `window.quant` API to the renderer |
-| Shared types | `src/shared` | IPC contracts, market data types, signal engine |
-| Renderer | `src/renderer` | React UI, chart rendering, app state |
-| Build scripts | `scripts` | esbuild bundle, tests, release packaging |
+```bash
+open release/Quant-mac-arm64/Quant.app
+```
 
-The renderer does not call remote market endpoints directly. It asks the Electron main process through the preload bridge. This keeps network access, filesystem writes, and external link opening in the main process.
+Windows PowerShell:
 
-## Data Sources
+```powershell
+.\release\Quant-win-x64\Quant.exe
+```
 
-Quant uses free public endpoints and bundled fallback data:
+Use `git clone` for the checked-in release folders. The macOS app bundle contains framework symlinks, and git preserves them correctly.
 
-- Yahoo Finance chart, quote, search, valuation, and earnings endpoints
-- Yahoo Finance RSS feeds
-- Google News RSS
-- FRED CSV endpoints for some macro overlays
-- Bundled sample chart, holdings, quote, news, and earnings data
+If macOS blocks the unsigned app, open System Settings and allow the app after the first blocked launch. The app is ad-hoc signed for local use but not Apple-notarized.
 
-No API key is required for the default experience.
+### Option 2: Run From Source
 
-Important limitations:
-
-- Public endpoints can change, throttle, or fail.
-- Data can be delayed or approximate.
-- Free endpoints should not be treated as trading infrastructure.
-- SAMPLE badges indicate bundled fallback data, not live data.
-
-## Requirements
+Requirements:
 
 - Node.js 20 or newer
 - npm
-- macOS or Windows for desktop use
-- Internet access for live public data
-
-Optional:
-
-- An OpenAI-compatible local LLM server for Quant AI model responses
-
-## Quick Start
-
-### macOS or Linux shell
-
-```bash
-git clone https://github.com/your-org/quant.git
-cd quant
-npm install
-npm run typecheck
-npm start
-```
-
-### Windows PowerShell
-
-```powershell
-git clone https://github.com/your-org/quant.git
-cd quant
-npm install
-npm run typecheck
-npm start
-```
-
-`npm start` builds the app and launches Electron.
-
-On first launch, Quant opens an onboarding wizard. It can add a starter watchlist preset, save optional Quant AI local model settings, and explain the main reading workflow. Skipping onboarding keeps the app in deterministic non-LLM mode.
-
-## Running Without Local LLM
-
-Local LLM support is optional and disabled by default.
-
-If no LLM is enabled, the Quant AI tab still works. It returns a deterministic memo generated from the signal engine, risk plan, blockers, and context. This keeps the app usable for all contributors without requiring a model server, private path, GPU, or provider account.
-
-No setup is required for this mode. Leave local LLM calls disabled in onboarding, or do not set any LLM environment variables.
-
-## Optional Local LLM Setup
-
-Quant can call any local server that exposes an OpenAI-compatible chat completions endpoint.
-
-Expected endpoints:
-
-- `GET /health`
-- `POST /v1/chat/completions`
-
-Expected request shape:
-
-- `model`
-- `temperature`
-- `max_tokens`
-- `messages`
-
-### Step 1: Start a compatible local model server
-
-Start your preferred local LLM runtime. Examples include llama.cpp server, LM Studio local server, Ollama OpenAI-compatible mode, or a custom OpenAI-compatible proxy.
-
-Confirm the health endpoint:
-
-```bash
-curl http://127.0.0.1:8080/health
-```
-
-If your server does not provide `/health`, add a small proxy or use a server mode that does. Quant checks health before sending chat requests.
-
-### Step 2: Enable LLM calls
-
-Use either the onboarding wizard or environment variables.
-
-On first launch, enable local LLM calls in the onboarding wizard, enter the server URL, enter the model name, and save. Quant writes these preferences to Electron's local `userData` directory.
-
-For shell-driven development, environment variables can provide the initial defaults:
+- macOS or Windows
+- Internet access for live public market data
 
 macOS or Linux shell:
 
 ```bash
+git clone https://github.com/eisenjimmy/Quant.git
+cd Quant
+npm install
+npm run typecheck
+npm start
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/eisenjimmy/Quant.git
+cd Quant
+npm install
+npm run typecheck
+npm start
+```
+
+`npm start` builds the Electron app and launches the desktop window.
+
+## Screenshots
+
+### First-Run Onboarding
+
+The onboarding wizard helps a new user choose a starter watchlist, decide whether to enable local LLM calls, and understand the basic reading flow.
+
+![Quant onboarding wizard](./docs/assets/screenshots/quant-onboarding.png)
+
+### Market Dashboard
+
+The main screen keeps the app dense and practical: watchlist on the left, holdings-driven news in the center, and earnings context on the right.
+
+![Quant dashboard](./docs/assets/screenshots/quant-dashboard.png)
+
+### Chart Modal and Signal Desk
+
+Opening a symbol brings up the full chart workspace: candlesticks, volume, pivots, risk levels, deterministic signal scoring, valuation context, and earnings context.
+
+![Quant chart modal](./docs/assets/screenshots/quant-chart-modal.png)
+
+### News at Each Swing
+
+Quant detects swing highs and swing lows, numbers the key points, and groups headlines published around each swing. The goal is to make price movement explainable: a user can click through the swing list and compare chart pivots against the news available near that date.
+
+![Quant news at each swing](./docs/assets/screenshots/quant-swing-news.png)
+
+### Macro Overlay System
+
+Quant can layer multiple macro series directly over the active price chart. This is useful when a setup depends on rates, labor data, inflation, oil, volatility, or broad risk appetite.
+
+![Quant macro overlays](./docs/assets/screenshots/quant-macro-overlays.png)
+
+Available chart overlays:
+
+| Overlay | Why It Matters |
+| --- | --- |
+| Jobs | Frames economic momentum and sector rotation risk |
+| Unemployment | Helps identify labor-cycle stress or late-cycle cooling |
+| CPI | Connects inflation pressure to rates, margins, and multiples |
+| 10Y yield | Acts as a discount-rate anchor for equity and ETF valuation |
+| Oil | Affects energy, transport, inflation, and consumer-margin pressure |
+| VIX | Shows market fear, expected volatility, and stop-width regime |
+| Risk | Draws entry, stop, target, and position sizing context |
+
+### Quant AI Agent
+
+Quant AI is a dedicated chart tab. It hydrates the current symbol, chart range, signal evaluation, risk plan, pivot-linked news, earnings, valuation, active macro overlays, and chart screenshot context before producing a memo.
+
+![Quant AI agent tab](./docs/assets/screenshots/quant-ai-agent.png)
+
+## Local AI With Zero Cloud LLM API Cost
+
+Quant AI does not require a paid cloud model provider.
+
+You have three modes:
+
+| Mode | Setup | Cloud LLM API Cost | Behavior |
+| --- | --- | --- | --- |
+| Deterministic fallback | None | `$0` | Quant returns a rules-based memo from the signal engine |
+| Local LLM | Run LM Studio, llama.cpp, Ollama OpenAI mode, or a proxy | `$0` | Quant sends chart context to your local OpenAI-compatible server |
+| Disabled | Leave local LLM off | `$0` | The AI tab remains usable through deterministic analysis |
+
+Expected local server endpoints:
+
+- `GET /health`
+- `POST /v1/chat/completions`
+
+Example local setup:
+
+```bash
 export QUANT_LLM_ENABLED=1
 export QUANT_LLM_BASE_URL=http://127.0.0.1:8080
-export QUANT_LLM_MODEL=your-model-name
+export QUANT_LLM_MODEL=your-local-model-name
 npm start
 ```
 
@@ -167,49 +170,131 @@ Windows PowerShell:
 ```powershell
 $env:QUANT_LLM_ENABLED="1"
 $env:QUANT_LLM_BASE_URL="http://127.0.0.1:8080"
-$env:QUANT_LLM_MODEL="your-model-name"
+$env:QUANT_LLM_MODEL="your-local-model-name"
 npm start
 ```
 
-### Step 3: Use Quant AI
+You can also configure this through onboarding. Saved LLM preferences are stored in Electron local app data as `llm-settings.json`.
 
-Open a chart, choose the `Quant AI` tab, and ask a question. The agent sends:
+## Feature Map
 
-- Current symbol and chart range
-- Deterministic signal evaluation
-- Risk plan
-- News near pivots
-- Earnings context
-- Valuation snapshot
-- Active macro overlays
-- Chart screenshot availability
+| Area | Capability |
+| --- | --- |
+| Watchlist | Add ETFs or stocks, see prices, daily movers, and grouped ETF/stock sections |
+| ETF holdings | Expand ETF holdings so news and earnings cover underlying companies |
+| News | Pull public finance headlines and group them by selected market universe |
+| Swing news | Group headlines around each detected chart swing high or swing low |
+| Earnings | Show upcoming earnings for watched names and ETF holdings |
+| Charts | Candlesticks, volume, ranges, pivots, support/resistance, risk overlay |
+| Macro overlays | Jobs, unemployment, CPI, 10Y yield, oil, VIX |
+| Signal Desk | Deterministic setup classification, confidence, blockers, risk plan |
+| Quant AI | Agentic chat tab over chart, signal, news, earnings, valuation, macro context |
+| Local persistence | Watchlist, saved Quant AI insights, LLM settings |
+| Release builds | Runnable macOS and Windows folders under `release/` |
 
-If the model server is unavailable, Quant falls back to the deterministic memo.
+## Generated Showcase Visual
 
-### Environment Reference
+The image below is generated artwork for the README. It is not a literal app screenshot; the real screenshots above show the actual running UI.
 
-Copy `.env.example` as a reference. Quant does not automatically load `.env`; set variables in your shell, process manager, or launcher.
+![Generated Quant AI showcase](./docs/assets/showcase/quant-ai-showcase.png)
 
-The onboarding wizard stores runtime LLM settings in local app data. Environment variables remain useful for development, CI, or managed launchers, and act as defaults when no saved settings exist.
+## Data Sources
 
-| Variable | Required | Default | Purpose |
-| --- | --- | --- | --- |
-| `QUANT_LLM_ENABLED` | No | disabled | Set to `1`, `true`, or `yes` to enable local LLM calls |
-| `QUANT_LLM_BASE_URL` | No | `http://127.0.0.1:8080` | OpenAI-compatible server base URL |
-| `QUANT_LLM_MODEL` | No | `gemma-4-e4b` | Model name sent to the local server |
+Quant uses free public endpoints and bundled fallback data:
 
-Setting `QUANT_LLM_BASE_URL` also enables local LLM calls, even if `QUANT_LLM_ENABLED` is not set.
+- Yahoo Finance chart, quote, search, valuation, and earnings endpoints
+- Yahoo Finance RSS feeds
+- Google News RSS
+- FRED CSV endpoints for selected macro overlays
+- Bundled sample chart, holdings, quote, news, and earnings data
 
-## Scripts
+No API key is required for the default experience.
+
+Important limitations:
+
+- Public endpoints can change, throttle, or fail.
+- Data can be delayed, approximate, incomplete, or unavailable.
+- Free endpoints should not be treated as trading infrastructure.
+- `SAMPLE` badges mean bundled fallback data is being shown instead of live data.
+
+## Repository Structure
+
+```text
+Quant/
+  src/
+    main/
+      main.ts                 Electron lifecycle, window setup, IPC handlers
+      preload.ts              Secure typed bridge exposed as window.quant
+      services/
+        chart.ts              Historical chart data loading
+        earnings.ts           Earnings calendar data
+        holdings.ts           ETF holdings lookup
+        insightStore.ts       Saved Quant AI insight records
+        llmSettings.ts        Optional local LLM settings persistence
+        macro.ts              Jobs, unemployment, CPI, 10Y, oil, VIX overlays
+        news.ts               Market news aggregation
+        pivotNews.ts          News grouped around chart pivots
+        quantAi.ts            Local LLM or deterministic Quant AI memo
+        quotes.ts             Watchlist quote data
+        valuation.ts          Valuation snapshot and formula estimates
+      data/
+        etf-holdings.json     Offline holdings fallback
+        symbol-directory.json Offline symbol search fallback
+    renderer/
+      App.tsx                 App shell
+      store.tsx               Watchlist, quotes, holdings, modal state
+      components/
+        OnboardingWizard.tsx  First-run setup wizard
+        ChartModal.tsx        Main chart workspace
+        NewsFeed.tsx          Holdings-driven news panel
+        Watchlist.tsx         Watchlist and movers panel
+        chart/
+          ChartCanvas.tsx     Lightweight Charts rendering
+          QuantAgentPanel.tsx Agentic Quant AI chat UI
+          QuantDecisionPanel.tsx Deterministic Signal Desk
+          useMacroOverlays.ts Macro overlay data hook
+      styles/                 App, chart, watchlist, news, earnings CSS
+    shared/
+      ipc.ts                  IPC channel names
+      types.ts                Shared API and market data contracts
+      quant.ts                Deterministic signal engine
+  scripts/
+    build.mjs                 esbuild bundle script
+    package-release.mjs       Runnable macOS and Windows release builder
+    test-quant.mjs            Signal-engine tests
+  docs/
+    assets/
+      screenshots/            Real app screenshots used in this README
+      showcase/               Generated public repo visuals
+  release/
+    Quant-mac-arm64/          Runnable macOS app folder
+    Quant-win-x64/            Runnable Windows x64 app folder
+```
+
+## Architecture
+
+Quant uses a standard Electron split:
+
+| Layer | Path | Responsibility |
+| --- | --- | --- |
+| Main process | `src/main` | Fetches remote data, owns persistent stores, handles IPC, opens external URLs |
+| Preload bridge | `src/main/preload.ts` | Exposes a typed, narrow `window.quant` API to the renderer |
+| Shared types | `src/shared` | IPC contracts, market data models, deterministic signal engine |
+| Renderer | `src/renderer` | React UI, chart rendering, app state, onboarding, agent UI |
+| Build scripts | `scripts` | Build, tests, smoke screenshots, release packaging |
+
+The renderer does not directly call remote market endpoints. It asks the Electron main process through the preload bridge. That keeps network access, filesystem writes, local LLM calls, and external link opening in the main process.
+
+## Common Commands
 
 | Command | Purpose |
 | --- | --- |
 | `npm run build` | Bundle Electron main, preload, renderer, and static data into `dist/` |
 | `npm run typecheck` | Run TypeScript type checking without emitting files |
-| `npm run test:quant` | Run signal-engine tests |
+| `npm run test:quant` | Run deterministic signal-engine tests |
 | `npm start` | Build and launch the desktop app |
 | `npm run smoke` | Build, launch in smoke mode, and write `dist/smoke.png` |
-| `npm run smoke:modal` | Build, launch with the SPY modal open, and write `dist/smoke-modal.png` |
+| `npm run smoke:modal` | Build, launch with the SPY chart modal open |
 | `npm run package:mac` | Build a runnable macOS app folder in `release/` |
 | `npm run package:win` | Build a runnable Windows x64 app folder in `release/` |
 | `npm run package:all` | Build macOS and Windows release folders |
@@ -220,95 +305,31 @@ Quant includes a lightweight release packager at `scripts/package-release.mjs`. 
 
 The packager:
 
-1. Runs `scripts/build.mjs`
-2. Creates a minimal Electron app payload under `resources/app`
-3. Copies the compiled `dist/` payload
-4. Writes a minimal runtime `package.json`
-5. Copies `LICENSE` into the packaged app
-6. Produces runnable release folders under `release/`
+1. Runs `scripts/build.mjs`.
+2. Creates a minimal Electron app payload under `resources/app`.
+3. Copies the compiled `dist/` payload.
+4. Writes a minimal runtime `package.json`.
+5. Copies `LICENSE` and `AUTHORS.md` into the packaged app.
+6. Produces runnable release folders under `release/`.
 
-### macOS Release
-
-On macOS:
-
-```bash
-npm run package:mac
-```
-
-Output:
-
-```text
-release/Quant-mac-arm64/Quant.app
-```
-
-The macOS package uses the locally installed Electron runtime. Build the macOS package on the same architecture as the installed Electron binary.
-
-For Apple Silicon:
-
-```bash
-npm run package:mac
-```
-
-For Intel macOS, run the same command on an Intel Mac or an environment with an Intel Electron runtime.
-
-This app is ad-hoc signed by the release script but not Apple-notarized. On another Mac, the user may need to allow it in System Settings.
-
-### Windows Release
-
-On macOS, Linux, or Windows:
-
-```bash
-npm run package:win
-```
-
-Output:
-
-```text
-release/Quant-win-x64/Quant.exe
-```
-
-The Windows packager downloads the official Electron Windows x64 runtime through `@electron/get`, extracts it, renames `electron.exe` to `Quant.exe`, and adds the app payload under `resources/app`.
-
-Distribute the entire `release/Quant-win-x64` folder. Do not distribute `Quant.exe` alone.
-
-### Build Both
-
-On macOS:
+Build both release folders:
 
 ```bash
 npm run package:all
 ```
 
-Output:
+Outputs:
 
 ```text
 release/Quant-mac-arm64/Quant.app
 release/Quant-win-x64/Quant.exe
 ```
 
-### Release Notes for Maintainers
+The Windows folder must be distributed as a folder. Do not distribute `Quant.exe` alone because it depends on adjacent Electron runtime files.
 
-Before publishing a release:
+## Troubleshooting
 
-```bash
-npm install
-npm run typecheck
-npm run test:quant
-npm run smoke:modal
-npm run package:all
-```
-
-Then inspect:
-
-- `dist/smoke-modal.png`
-- `release/Quant-mac-*/Quant.app`
-- `release/Quant-win-x64/Quant.exe`
-
-For public releases, replace placeholder repository URLs in `package.json` with the real repository URL.
-
-## Windows Troubleshooting
-
-### `npm start` opens no window in VS Code
+### `npm start` opens no window in VS Code on Windows
 
 Some VS Code terminals set `ELECTRON_RUN_AS_NODE`, which can make Electron behave like Node instead of launching a window.
 
@@ -320,19 +341,9 @@ npm run build
 & ".\node_modules\electron\dist\electron.exe" .
 ```
 
-### PowerShell blocks npm scripts
-
-Use the explicit npm command from a normal PowerShell session, or adjust your execution policy according to your organization policy.
-
-## macOS Troubleshooting
-
-### Unsigned app warning
-
-Release folders created by this repository are ad-hoc signed for local execution but not Apple-notarized. For personal use, open System Settings and allow the app after the first blocked launch if macOS blocks it.
-
 ### Local LLM cannot connect
 
-Check:
+Check the local model server:
 
 ```bash
 curl http://127.0.0.1:8080/health
@@ -340,47 +351,13 @@ curl http://127.0.0.1:8080/health
 
 Then confirm the environment variables are set in the same shell that launches Quant.
 
-If you configured the model through onboarding, reopen onboarding with:
+To reopen onboarding:
 
 ```bash
 ./node_modules/.bin/electron . --onboarding
 ```
 
-For normal use, you can also remove the saved `llm-settings.json` file from Electron's `userData` directory and launch Quant again to reset onboarding defaults.
-
-## Project Structure
-
-```text
-src/
-  main/
-    main.ts                 Electron app lifecycle and IPC handlers
-    preload.ts              Typed bridge exposed to renderer
-    services/               Data fetching, cache, stores, analysis services
-    data/                   Bundled offline data
-  renderer/
-    App.tsx                 App shell
-    store.tsx               Global renderer state and actions
-    components/             Watchlist, news, earnings, chart modal
-    styles/                 CSS modules by surface
-  shared/
-    ipc.ts                  IPC channel names
-    types.ts                Shared API/data contracts
-    quant.ts                Deterministic signal engine
-scripts/
-  build.mjs                 esbuild bundle script
-  test-quant.mjs            Signal-engine test script
-  package-release.mjs       Runnable Windows/macOS release packager
-```
-
-## Data Storage
-
-Quant stores local user data in Electron's `userData` directory:
-
-- `watchlist.json`
-- `llm-settings.json`
-- saved Quant AI insight records
-
-The exact directory depends on the operating system and Electron app name.
+To reset saved LLM preferences, remove `llm-settings.json` from Electron's `userData` directory and launch Quant again.
 
 ## Security Model
 
@@ -390,6 +367,11 @@ The exact directory depends on the operating system and Electron app name.
 - Market data and news are treated as untrusted remote content.
 - Local LLM calls are disabled by default.
 - No secrets are required for default operation.
+- Treat market output as informational context, not execution advice.
+
+## Credits
+
+Original code by David Wong, username `DavidWProject`.
 
 ## Contributing
 
@@ -398,10 +380,6 @@ See `CONTRIBUTING.md`.
 ## Security
 
 See `SECURITY.md`.
-
-## Credits
-
-Original code by David Wong, username `DavidWProject`.
 
 ## License
 

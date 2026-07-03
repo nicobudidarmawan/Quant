@@ -63,10 +63,46 @@ const DEFAULT_SETTINGS: ChartModalSettings = {
   activeRailTab: 'signal',
 };
 
+function settingsFromQuery(settings: ChartModalSettings): ChartModalSettings {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('smokeModal')) return settings;
+
+  const next: ChartModalSettings = {
+    ...settings,
+    overlays: { ...settings.overlays },
+  };
+  const rail = params.get('smokeRail');
+  if (rail === 'signal' || rail === 'ai' || rail === 'news') next.activeRailTab = rail;
+
+  const overlayParam = params.get('smokeOverlays');
+  if (overlayParam === 'all') {
+    next.overlays = {
+      jobs: true,
+      unemployment: true,
+      inflation: true,
+      treasury10y: true,
+      oil: true,
+      vix: true,
+    };
+  } else if (overlayParam) {
+    const selected = new Set(overlayParam.split(',').map((value) => value.trim()));
+    next.overlays = {
+      jobs: selected.has('jobs'),
+      unemployment: selected.has('unemployment'),
+      inflation: selected.has('inflation'),
+      treasury10y: selected.has('treasury10y') || selected.has('10y'),
+      oil: selected.has('oil'),
+      vix: selected.has('vix'),
+    };
+  }
+
+  return next;
+}
+
 function loadSettings(): ChartModalSettings {
   try {
     const parsed = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}') as Partial<ChartModalSettings>;
-    return {
+    return settingsFromQuery({
       showRiskOverlay:
         typeof parsed.showRiskOverlay === 'boolean'
           ? parsed.showRiskOverlay
@@ -87,9 +123,9 @@ function loadSettings(): ChartModalSettings {
         parsed.activeRailTab === 'news' || parsed.activeRailTab === 'ai'
           ? parsed.activeRailTab
           : 'signal',
-    };
+    });
   } catch {
-    return DEFAULT_SETTINGS;
+    return settingsFromQuery(DEFAULT_SETTINGS);
   }
 }
 

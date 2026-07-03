@@ -6,13 +6,13 @@
   "main": "dist/main/main.js",
   "license": "MIT",
   "author": "David Wong (DavidWProject)",
-  "homepage": "https://github.com/your-org/quant#readme",
+  "homepage": "https://github.com/eisenjimmy/Quant#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/quant.git"
+    "url": "https://github.com/eisenjimmy/Quant.git"
   },
   "bugs": {
-    "url": "https://github.com/your-org/quant/issues"
+    "url": "https://github.com/eisenjimmy/Quant/issues"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
