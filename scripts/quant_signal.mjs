@@ -104,7 +104,7 @@ try {
   const result = {
     symbol: evaluation.symbol,
     decision: evaluation.decision,
-    setup: evaluation.setup,
+    setup: evaluation.setupType,
     regime: evaluation.regime,
     confidence: evaluation.confidence,
     reason: evaluation.reason,
